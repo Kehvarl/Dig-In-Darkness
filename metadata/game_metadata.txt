@@ -1,8 +1,8 @@
 # Remove the pound sign and leading space for the properties below before publishing your game.
 devid=kehvarl
 devtitle=Kehvarl
-gameid=button-experiments
-gametitle=Button Experiments
+gameid=dig-in-darkness
+gametitle=Dig In Darkness
 version=0.1
 icon=metadata/icon.png
 
