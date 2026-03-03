@@ -1,36 +1,14 @@
 require 'app/game.rb'
 
-# TODO
-# - Hide "Passive" count
-# - Increase "Defend" decay rate based on "Passive" Count
-# - "Fortify" reduces "Passive" Count
-# - Sleep/Whisper-spike to  setting a counter/value based on whisper level.  Use this counter to trigger nightmares
-
-
-
 class MyGame < Game
-
 
     def initialize args
         super
 
         setup_surface
+        setup_entry
 
         @location = :surface
-    end
-
-    def change_location new_location
-        if @location == new_location
-            return
-        end
-
-        @location = new_location
-        # Set a flag for a newly changed location
-        # How to make this usable without checking and clearing it on every button, actor, etc
-        # Maybe override Game.tick
-        # If we pull buttons out of tick and into their own button_tick, we can override _that_ and respond to all buttons in the new location.
-        # Or "newly-entered" can exist at the engine level, not the new game.
-        # Also, first-time-in-location could be useful from a narrative sense.
     end
 
 # ============================================================
@@ -46,18 +24,78 @@ class MyGame < Game
 
         create_button :descend, 600, 200, "Descend"
         @buttons[:descend].location =  :surface
-        highlight_button :descend
+        highlight_button :descend, 100
         reveal_button :descend
 
-        create_button :supplies, 600, 200, "Prepare Supplies"
+        create_button :supplies, 600, 250, "Prepare Supplies"
         @buttons[:supplies].location =  :surface
         highlight_button :supplies
         reveal_button :supplies
 
-        create_button :findings, 600, 200, "Study Findings"
+        create_button :findings, 600, 300, "Study Findings"
         @buttons[:findings].location =  :surface
         highlight_button :findings
         reveal_button :findings
     end
 
+    def descend_tick
+    end
 
+    def descend_clicked
+        if @buttons[:descend].highlight_percent >= 100
+            @buttons[:descend].highlight_percent = 0
+            change_location :entry
+        end
+    end
+
+# ============================================================
+# :entry
+#
+# First underground chamber.
+#
+# Available Actions:
+# - Excavate
+# - Observe
+# - Ascend
+#
+# Actors:
+# - Darkness (slow Light drain)
+# - Structure (low frequency ambient events)
+#
+# Tone:
+# Cool air. Settling dust.
+#
+# Purpose:
+# Introduce excavation loop.
+# ============================================================
+    def setup_entry
+
+        create_button :ascend, 600, 200, "Ascend"
+        @buttons[:ascend].location =  :entry
+        highlight_button :ascend, 100
+        reveal_button :ascend
+
+        create_button :observe, 600, 250, "Observe"
+        @buttons[:observe].location =  :entry
+        highlight_button :observe
+        reveal_button :observe
+
+        create_button :excavate, 600, 300, "Excavate"
+        @buttons[:excavate].location =  :entry
+        highlight_button :excavate
+        reveal_button :excavate
+
+        create_actor :darkness
+        @actors[:darkness].location = :entry
+
+    end
+
+    def darkness_tick
+    end
+
+    def ascend_clicked
+        change_location :surface
+    end
+
+
+end

@@ -29,6 +29,7 @@ class Game
         @running = true
         @args = args
         @location = nil
+        @visited_locations = {}
         @unlocks = {}
         @buttons = {}
         @actors = {}
@@ -179,7 +180,36 @@ class Game
         end
     end
 
+# == Locations ==
+
+# ------------------------------------------------------------
+# change_location
+# Triggers a location change
+#
+# Implicit callbacks:
+#   <location>_entered
+#   <location>_first_entered
+# ------------------------------------------------------------
+
+def change_location(new_location)
+  return if @location == new_location
+
+  @location = new_location
+
+  if self.respond_to?("#{new_location}_entered".to_sym)
+    self.send(enter_method)
+  end
+
+  if not @visited_locations[new_location]
+    if self.respond_to?("#{new_location}_first_entered".to_sym)
+        self.send(first_method)
+        @visited_locations[new_location] = true
+    end
+  end
+end
+
 # == Buttons ==
+
 # ------------------------------------------------------------
 # create_button
 # Registers a button.
