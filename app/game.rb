@@ -196,14 +196,14 @@ def change_location(new_location)
 
   @location = new_location
 
-  if self.respond_to?("#{new_location}_entered".to_sym)
-    self.send(enter_method)
-  end
-
   if not @visited_locations[new_location]
     if self.respond_to?("#{new_location}_first_entered".to_sym)
-        self.send(first_method)
+        self.send("#{new_location}_first_entered".to_sym)
         @visited_locations[new_location] = true
+    end
+  else
+    if self.respond_to?("#{new_location}_entered".to_sym)
+        self.send("#{new_location}_entered".to_sym)
     end
   end
 end
@@ -320,7 +320,7 @@ end
 # Implicit callback:
 #   <id>_tick
 # ------------------------------------------------------------
-    def create_actor id, ticks_total: 60, location: nil, always_tick: nil
+    def create_actor id, ticks_total=60, location=nil, always_tick=nil
         @actors[id] = {
                     location: location,
                     always_tick: always_tick,
