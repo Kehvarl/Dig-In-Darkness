@@ -18,6 +18,7 @@ class MyGame < Game
 # ============================================================
     def setup_globals
         create_log :notes, 300, 10, 680, 270
+        set_resource :light, 100, show=false
         set_resource :darkness, 0, show=false
     end
 
@@ -51,6 +52,7 @@ class MyGame < Game
     end
 
     def surface_entered
+        add_message(:notes, "You've returned to your basecamp on the surface to recharge your lantern and review your finds.")
     end
 
     def restock_tick
@@ -58,14 +60,20 @@ class MyGame < Game
         a.ticks_remaining -=1
         if a.ticks_remaining <= 0
             a.ticks_remaining = a.ticks_total
-            if get_resource(:darkness) > 0
-                use_resource(:darkness, 5)
+            if get_resource(:light) < 100
+                generate_resource(:light, 5)
             end
         end
     end
 
+    def supplies_clicked
+    end
+
+    def findings_clicked
+    end
+
     def descend_tick
-        @buttons[:descend].highlight_percent = 100-(get_resource :darkness)
+        @buttons[:descend].highlight_percent = (get_resource :light)
     end
 
     def descend_clicked
@@ -119,24 +127,49 @@ class MyGame < Game
 
     def entry_first_entered
         add_message(:notes, "<Describe entrance hall in detail>")
+        set_resource(:darkness, 5)
     end
 
     def entry_entered
         add_message(:notes, "<Short description, maybe from a small collection>")
+        set_resource(:darkness, 5)
     end
 
     def darkness_tick
-        a = @actors[:darkness]
-        a.ticks_remaining -=1
-        if a.ticks_remaining <= 0
-            a.ticks_remaining = a.ticks_total
-            if get_resource(:darkness) < 100
-                generate_resource(:darkness, 10)
+        darkness = @actors[:darkness]
+        darkness.ticks_remaining -=1
+        if darkness.ticks_remaining <= 0
+            darkness.ticks_remaining = darkness.ticks_total
+            if use_resource(:light, get_resource(:darkness))
+                #If we've used up the last of our usable light, tell us.
+                if get_resource(:light) < get_resource(:darkness)
+                    add_message(:notes, "Your lantern sputters. Darkness presses in from every direction.")
+                end
+            else
+                if use_resource(:light, 1)
+                    add_message(:notes, "You fiddle with the lantern and coax a faint glow, it's getting harder to see the path back")
+                else
+                    add_message(:notes, "Nothing you try works, it's too dark to see.")
+                end
             end
         end
     end
 
+    def observe_clicked
+    end
+
+    def excavate_clicked
+        if get_resource(:light) < get_resource(:darkness)
+            add_message(:notes, "It is too dark to dig safely.")
+            return
+        end
+        #Dig, message and some sort of pickups. So we'll need an inventory system eventually.
+    end
+
     def ascend_clicked
+        if get_resource(:light) < get_resource(:darkness)
+            add_message(:notes, "You stumble your way back along the path.  It's a good thing you left a rope to follow.")
+        end
         change_location :surface
     end
 
