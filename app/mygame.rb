@@ -20,6 +20,8 @@ class MyGame < Game
         create_log :notes, 300, 10, 680, 270
         set_resource :light, 100, show=false
         set_resource :darkness, 0, show=false
+        set_resource :finds, 0, show=false
+        set_resource :relics, 0, show=false
     end
 
 # ============================================================
@@ -70,6 +72,25 @@ class MyGame < Game
     end
 
     def findings_clicked
+        if get_resource(:finds) > 0
+            use_resource(:finds, 1)
+            generate_resource(:relics, 1)
+
+            messages = [
+                "Carefully brushing away the dust reveals a carved idol.",
+                "You clean the object and discover an etched bronze charm.",
+                "Beneath the dirt lies a small clay tablet.",
+                "The artifact turns out to be a delicate ceremonial ring."
+            ]
+
+            add_message(:notes, messages.sample)
+
+            # Might need to track what relics we found if we ever need to reference them again
+            # Perhaps there's use for procedurally generated relics.
+
+        else
+            add_message(:notes, "You have nothing new to study.")
+        end
     end
 
     def descend_tick
@@ -126,12 +147,19 @@ class MyGame < Game
     end
 
     def entry_first_entered
-        add_message(:notes, "<Describe entrance hall in detail>")
+        add_message(:notes, "<Detailed message>")
         set_resource(:darkness, 5)
     end
 
     def entry_entered
-        add_message(:notes, "<Short description, maybe from a small collection>")
+        messages = [
+            "Dust drifts through the lantern beam.",
+            "The air is cool and still.",
+            "Ancient stone blocks form a low archway.",
+            "Your footsteps echo softly in the chamber."
+        ]
+
+        add_message(:notes, messages.sample)
         set_resource(:darkness, 5)
     end
 
@@ -156,6 +184,13 @@ class MyGame < Game
     end
 
     def observe_clicked
+        messages = [
+            "The entry hallway is covered in worn and faded carvings.",
+            "There is a feature that might be a doorway leading deeper", #Might need to tie this to an unlock
+            "Weathered warnings dance beneath the light of your lantern",
+            "The passage echoes with long forgotten whispers, and footsteps."
+        ]
+        add_message(:notes, messages.sample)
     end
 
     def excavate_clicked
@@ -163,7 +198,15 @@ class MyGame < Game
             add_message(:notes, "It is too dark to dig safely.")
             return
         end
-        #Dig, message and some sort of pickups. So we'll need an inventory system eventually.
+
+        messages = [
+            "Your trowel clinks against something; you'll need to study this later",
+            "Your questing fingers brush over something loose. It bears further study",
+            "A small packet, worth opening with care",
+            "Another trinket, why were so many left in the entryway?"
+        ]
+        add_message(:notes, messages.sample)
+        generate_resource(:finds)
     end
 
     def ascend_clicked
