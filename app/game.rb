@@ -85,7 +85,9 @@ class Game
 
         @actors.each do |_, actor|
             if actor_can_tick(actor)
-                if self.respond_to? actor.on_tick
+                if actor.on_tick_proc
+                    actor.on_tick_proc.call(self, actor)
+                elsif actor.on_tick && respond_to?(actor.on_tick)
                     self.send(actor.on_tick)
                 end
             end
@@ -93,7 +95,9 @@ class Game
 
         @buttons.each do |_, button|
             if button_can_tick(button)
-                if self.respond_to? button.on_tick
+                if button.on_tick_proc
+                    button.on_tick_proc.call(self, button)
+                elsif button.on_tick && self.respond_to?(button.on_tick)
                     self.send(button.on_tick)
                 end
                 calculate_highlight(button)
