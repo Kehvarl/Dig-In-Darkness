@@ -191,26 +191,33 @@ class Game
 # Triggers a location change
 #
 # Implicit callbacks:
+#   <location>_left
 #   <location>_entered
 #   <location>_first_entered
 # ------------------------------------------------------------
 
-def change_location(new_location)
-  return if @location == new_location
+    def change_location(new_location)
+        return if @location == new_location
 
-  @location = new_location
+        if self.respond_to?("#{@location}_left".to_sym)
+            self.send("#{@location}left".to_sym)
+        end
 
-  if not @visited_locations[new_location]
-    if self.respond_to?("#{new_location}_first_entered".to_sym)
-        self.send("#{new_location}_first_entered".to_sym)
-        @visited_locations[new_location] = true
+        @location = new_location
+
+        if not @visited_locations[new_location]
+            @visited_locations[new_location] = true
+            if self.respond_to?("#{new_location}_first_entered".to_sym)
+                self.send("#{new_location}_first_entered".to_sym)
+            elsif self.respond_to?("#{new_location}_entered".to_sym)
+                self.send("#{new_location}_entered".to_sym)
+            end
+        else
+            if self.respond_to?("#{new_location}_entered".to_sym)
+                self.send("#{new_location}_entered".to_sym)
+            end
+        end
     end
-  else
-    if self.respond_to?("#{new_location}_entered".to_sym)
-        self.send("#{new_location}_entered".to_sym)
-    end
-  end
-end
 
 # == Buttons ==
 
@@ -220,6 +227,7 @@ end
 #
 # Hidden by default.
 # Optional location limits render/tick scope.
+# Optional on_tick_proc overrides implicit <id>_tick dispatch with a lambda.
 #
 # Implicit callbacks:
 #   <id>_clicked
@@ -238,6 +246,7 @@ end
             always_tick: always_tick,
             on_click: "#{id}_clicked".to_sym,
             on_tick: "#{id}_tick".to_sym,
+            on_tick_proc: nil,
             highlight_percent: 0,
             highlight: false,
             primitives: [
@@ -321,6 +330,8 @@ end
 # Registers a background ticking entity.
 #
 # Optional location restricts where it ticks.
+# Optional on_tick_proc overrides implicit <id>_tick dispatch with a lambda.
+#
 # Implicit callback:
 #   <id>_tick
 # ------------------------------------------------------------
@@ -331,6 +342,7 @@ end
                     ticks_total: ticks_total,
                     ticks_remaining: ticks_total,
                     on_tick: "#{id}_tick".to_sym,
+                    on_tick_proc: nil,
             }
     end
 
