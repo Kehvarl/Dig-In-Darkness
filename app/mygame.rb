@@ -155,7 +155,7 @@ class MyGame < Game
     end
 
     def entry_first_entered
-        on_enter("<Detailed Description>")
+        on_enter_entry("<Detailed Description>")
     end
 
     def entry_entered
@@ -165,14 +165,14 @@ class MyGame < Game
             "Ancient stone blocks form a low archway.",
             "Your footsteps echo softly in the chamber."
         ]
-        on_enter(messages.sample)
+        on_enter_entry(messages.sample)
     end
 
-    def on_enter message
+    def on_enter_entry message
         add_message(:notes, message)
         set_resource(:darkness, 5)
-        @buttons[:excavate].highlight_percent = 0
-        @buttons[:observe].highlight_percent = 100
+        set_highlight(:excavate, 0)
+        set_highlight(:observe, 100)
     end
 
     def darkness_tick
@@ -196,13 +196,13 @@ class MyGame < Game
     end
 
     def observe_clicked
-        if @buttons[:observe].highlight_percent < 100
+        if not button_highlight_full?(:observe)
             return
         end
 
         if get_resource(:light) < get_resource(:darkness)
             add_message(:notes, "You cannot see well enough to explore further.")
-            @buttons[:observe].highlight_percent = 0
+            set_highlight(:observe, 0)
             return
         end
 
@@ -216,16 +216,16 @@ class MyGame < Game
             add_message(:notes, messages.sample)
         end
 
-        @buttons[:excavate].highlight_percent += 25
+        adjust_highlight(:excavate, 25)
     end
 
     def excavate_clicked
-        if @buttons[:excavate].highlight_percent < 100
+        if not button_highlight_full?(:excavate)
             return
         end
         if get_resource(:light) < get_resource(:darkness)
             add_message(:notes, "It is too dark to dig safely.")
-            @buttons[:excavate].highlight_percent = 0
+            set_highlight(:excavate, 0)
             return
         end
 
@@ -237,8 +237,8 @@ class MyGame < Game
         ]
         add_message(:notes, messages.sample)
         generate_resource(:finds)
-        @buttons[:excavate].highlight_percent = 0
-        @buttons[:observe].highlight_percent = 100
+        set_highlight(:excavate, 0)
+        set_highlight(:observe, 100)
     end
 
     def ascend_clicked

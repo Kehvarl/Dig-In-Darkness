@@ -290,6 +290,22 @@ class Game
     end
 
 # ------------------------------------------------------------
+# set_highlight
+# Sets the button hight value
+# ------------------------------------------------------------
+    def set_highlight id, highlight_percent
+        @buttons[id].highlight_percent = highlight_percent
+    end
+
+# ------------------------------------------------------------
+# adjust_highlight
+# Adjusts the button highlight percentage by the given amount
+# ------------------------------------------------------------
+    def adjust_highlight id, percent_change
+        @buttons[id].highlight_percent += percent_change
+    end
+
+# ------------------------------------------------------------
 # reveal_button
 # Makes a button eligible for rendering.
 # ------------------------------------------------------------
@@ -316,6 +332,11 @@ class Game
                 button.highlight_percent += step * (diff < 0 ? -1 : 1)
             end
         end
+    end
+
+# Returns true if the button's highlight bar is filled'
+    def button_highlight_full?(id)
+        @buttons[id].highlight_percent >= 100
     end
 
 # Returns true if the button should tick this frame
