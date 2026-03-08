@@ -55,6 +55,9 @@ class MyGame < Game
 
     def surface_entered
         add_message(:notes, "You've returned to your basecamp on the surface to recharge your lantern and review your finds.")
+        if get_resource(:finds) > 0
+            @buttons[:findings].highlight_percent = 100
+        end
     end
 
     def restock_tick
@@ -72,6 +75,10 @@ class MyGame < Game
     end
 
     def findings_clicked
+        if @buttons[:findings].highlight_percent < 100
+            return
+        end
+
         if get_resource(:finds) > 0
             use_resource(:finds, 1)
             generate_resource(:relics, 1)
@@ -90,6 +97,7 @@ class MyGame < Game
 
         else
             add_message(:notes, "You have nothing new to study.")
+            @buttons[:findings].highlight_percent = 0
         end
     end
 
@@ -147,8 +155,7 @@ class MyGame < Game
     end
 
     def entry_first_entered
-        add_message(:notes, "<Detailed message>")
-        set_resource(:darkness, 5)
+        on_enter_entry("<Detailed Description>")
     end
 
     def entry_entered
@@ -158,9 +165,14 @@ class MyGame < Game
             "Ancient stone blocks form a low archway.",
             "Your footsteps echo softly in the chamber."
         ]
+        on_enter_entry(messages.sample)
+    end
 
-        add_message(:notes, messages.sample)
+    def on_enter_entry message
+        add_message(:notes, message)
         set_resource(:darkness, 5)
+        set_highlight(:excavate, 0)
+        set_highlight(:observe, 100)
     end
 
     def darkness_tick
@@ -184,18 +196,36 @@ class MyGame < Game
     end
 
     def observe_clicked
+        if not button_highlight_full?(:observe)
+            return
+        end
+
+        if get_resource(:light) < get_resource(:darkness)
+            add_message(:notes, "You cannot see well enough to explore further.")
+            set_highlight(:observe, 0)
+            return
+        end
+
         messages = [
             "The entry hallway is covered in worn and faded carvings.",
             "There is a feature that might be a doorway leading deeper", #Might need to tie this to an unlock
             "Weathered warnings dance beneath the light of your lantern",
             "The passage echoes with long forgotten whispers, and footsteps."
         ]
-        add_message(:notes, messages.sample)
+        if rand < 0.6
+            add_message(:notes, messages.sample)
+        end
+
+        adjust_highlight(:excavate, 25)
     end
 
     def excavate_clicked
+        if not button_highlight_full?(:excavate)
+            return
+        end
         if get_resource(:light) < get_resource(:darkness)
             add_message(:notes, "It is too dark to dig safely.")
+            set_highlight(:excavate, 0)
             return
         end
 
@@ -207,6 +237,8 @@ class MyGame < Game
         ]
         add_message(:notes, messages.sample)
         generate_resource(:finds)
+        set_highlight(:excavate, 0)
+        set_highlight(:observe, 100)
     end
 
     def ascend_clicked
