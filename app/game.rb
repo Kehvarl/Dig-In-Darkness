@@ -200,7 +200,7 @@ class Game
         return if @location == new_location
 
         if self.respond_to?("#{@location}_left".to_sym)
-            self.send("#{@location}left".to_sym)
+            self.send("#{@location}_left".to_sym)
         end
 
         @location = new_location
