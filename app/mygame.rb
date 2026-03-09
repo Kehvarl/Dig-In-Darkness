@@ -5,11 +5,68 @@ class MyGame < Game
     def initialize args
         super
 
+        # A find has
+        # - An unrevealed description (eg: A dirt-caked stone)
+        # - A type (eg: figurine, idol, charm, ring, brooch, box, etc)
+        # - A material (eg: golden, bronze, jade, pottery)
+        # - Some interesting revealed description:
+        #    -eg: Your careful work uncovers a fine golden idol <some more interesting stuff here>
+
         setup_globals
         setup_surface
         setup_entry
 
         @location = :surface
+    end
+
+    def generate_find
+        conditions = [
+            "cracked",
+            "weathered",
+            "polished",
+            "dust-covered",
+            "chipped",
+            "remarkably well preserved"
+        ]
+
+        materials = [
+            "jade",
+            "bronze",
+            "gold",
+            "clay",
+            "obsidian",
+            "bone"
+        ]
+
+        types = [
+            "ring",
+            "brooch",
+            "figurine",
+            "coin",
+            "idol",
+            "amulet"
+        ]
+
+        details = [
+            "depicting a coiled serpent",
+            "engraved with tiny runes",
+            "bearing the mark of unknown meaning",
+            "decorated with spiral motifs",
+            "showing a stylized sun",
+            "carved into the shape of a watchful eye"
+        ]
+
+        {
+            condition: conditions.sample,
+            material: materials.sample,
+            type: types.sample,
+            detail: details.sample,
+            studied: false
+        }
+    end
+
+    def describe_find(find)
+        "A #{find[:condition]} #{find[:material]} #{find[:type]} #{find[:detail]}."
     end
 
 # ============================================================
@@ -22,6 +79,7 @@ class MyGame < Game
         set_resource :darkness, 0, show=false
         set_resource :finds, 0, show=false
         set_resource :relics, 0, show=false
+        @finds = []
     end
 
 # ============================================================
@@ -81,19 +139,17 @@ class MyGame < Game
 
         if get_resource(:finds) > 0
             use_resource(:finds, 1)
-            generate_resource(:relics, 1)
-
+            #generate_resource(:relics, 1)
+            find = generate_find
             messages = [
-                "Carefully brushing away the dust reveals a carved idol.",
-                "You clean the object and discover an etched bronze charm.",
-                "Beneath the dirt lies a small clay tablet.",
-                "The artifact turns out to be a delicate ceremonial ring."
+                "Carefully brushing away the dust reveals",
+                "You clean the object and discover",
+                "Beneath the dirt lies",
+                "The artifact turns out to be"
             ]
 
-            add_message(:notes, messages.sample)
-
-            # Might need to track what relics we found if we ever need to reference them again
-            # Perhaps there's use for procedurally generated relics.
+            add_message(:notes, "#{messages.sample} #{describe_find(find)}")
+            @finds << find
 
         else
             add_message(:notes, "You have nothing new to study.")
@@ -150,7 +206,6 @@ class MyGame < Game
         reveal_button :excavate
 
         create_actor :darkness, ticks_total=60, location=:entry
-        #@actors[:darkness].location = :entry
 
     end
 
