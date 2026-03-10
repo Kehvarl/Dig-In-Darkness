@@ -1,72 +1,16 @@
 require 'app/game.rb'
+require 'app/proc_gen.rb'
 
 class MyGame < Game
 
     def initialize args
         super
 
-        # A find has
-        # - An unrevealed description (eg: A dirt-caked stone)
-        # - A type (eg: figurine, idol, charm, ring, brooch, box, etc)
-        # - A material (eg: golden, bronze, jade, pottery)
-        # - Some interesting revealed description:
-        #    -eg: Your careful work uncovers a fine golden idol <some more interesting stuff here>
-
         setup_globals
         setup_surface
         setup_entry
 
         @location = :surface
-    end
-
-    def generate_find
-        conditions = [
-            "cracked",
-            "weathered",
-            "polished",
-            "dust-covered",
-            "chipped",
-            "remarkably well preserved"
-        ]
-
-        materials = [
-            "jade",
-            "bronze",
-            "gold",
-            "clay",
-            "obsidian",
-            "bone"
-        ]
-
-        types = [
-            "ring",
-            "brooch",
-            "figurine",
-            "coin",
-            "idol",
-            "amulet"
-        ]
-
-        details = [
-            "depicting a coiled serpent",
-            "engraved with tiny runes",
-            "bearing the mark of unknown meaning",
-            "decorated with spiral motifs",
-            "showing a stylized sun",
-            "carved into the shape of a watchful eye"
-        ]
-
-        {
-            condition: conditions.sample,
-            material: materials.sample,
-            type: types.sample,
-            detail: details.sample,
-            studied: false
-        }
-    end
-
-    def describe_find(find)
-        "A #{find[:condition]} #{find[:material]} #{find[:type]} #{find[:detail]}."
     end
 
 # ============================================================
@@ -140,7 +84,7 @@ class MyGame < Game
         if get_resource(:finds) > 0
             use_resource(:finds, 1)
             #generate_resource(:relics, 1)
-            find = generate_find
+            find = ProcGen.generate_find()
             messages = [
                 "Carefully brushing away the dust reveals",
                 "You clean the object and discover",
@@ -148,7 +92,7 @@ class MyGame < Game
                 "The artifact turns out to be"
             ]
 
-            add_message(:notes, "#{messages.sample} #{describe_find(find)}")
+            add_message(:notes, "#{messages.sample} #{ProcGen.describe_find(find)}")
             @finds << find
 
         else
