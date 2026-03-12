@@ -168,6 +168,9 @@ class MyGame < Game
     end
 
     def on_enter_entry message
+        @buttons[:ascend].location =  :entry
+        @buttons[:excavate].location =  :entry
+        @buttons[:observer].location =  :entry
         add_message(:notes, message)
         set_resource(:darkness, 5)
         set_highlight(:excavate, 0)
@@ -247,5 +250,73 @@ class MyGame < Game
         change_location :surface
     end
 
+# ============================================================
+# :gallery
+#
+# A rich, treasure-filled chamber
+#
+# Available Actions:
+# - Excavate
+# - Observe
+# - Ascend
+#
+# Actors:
+# - Darkness (slow Light drain)
+# - Structure (low frequency ambient events)
+#
+# Tone:
+# Cool air. Settling dust.
+#
+# Purpose:
+# More excavation fun.
+# ============================================================
+    def setup_gallery
 
+        # We'll cheat and use the same buttons
+        #create_button :ascend, 600, 300, "Ascend"
+        #@buttons[:ascend].location =  :entry
+        #highlight_button :ascend, 100
+        #reveal_button :ascend
+
+        #create_button :observe, 600, 350, "Observe"
+        #@buttons[:observe].location =  :entry
+        #highlight_button :observe
+        #reveal_button :observe
+
+        #create_button :excavate, 600, 400, "Excavate"
+        #@buttons[:excavate].location =  :entry
+        #highlight_button :excavate
+        #reveal_button :excavate
+
+        # We could also steal the darkness tick, or maybe we need a special one
+        #create_actor :darkness, ticks_total=60, location=:entry
+
+        # Looks like I need buttons that can exist in a list of locations.  That seems like a good engine upgrade.
+
+    end
+
+    def gallery_first_entered
+        on_enter_gallery("<Detailed Description>")
+    end
+
+    def gallery_entered
+        messages = [
+            "Dust drifts through the lantern beam.",
+            "The air is cool and still.",
+            "Ancient stone blocks form a low archway.",
+            "Your footsteps echo softly in the chamber."
+        ]
+        on_enter_gallery(messages.sample)
+    end
+
+    def on_enter_gallery message
+        @buttons[:ascend].location =  :gallery
+        @buttons[:excavate].location =  :gallery
+        @buttons[:observer].location =  :gallery
+
+        add_message(:notes, message)
+        set_resource(:darkness, 5)
+        set_highlight(:excavate, 0)
+        set_highlight(:observe, 100)
+    end
 end
