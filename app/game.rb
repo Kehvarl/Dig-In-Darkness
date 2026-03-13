@@ -37,7 +37,7 @@ class Game
         @logs = {}
         @default_button_color = {r:128,g:128,b:128}
         @default_border_color = {r:64,g:64,b:64}
-        @default_hightlight_color = {r:196,g:196,b:196}
+        @default_highlight_color = {r:196,g:196,b:196}
         @default_text_color = {r:0,g:0,b:0}
     end
 
@@ -52,7 +52,7 @@ class Game
     def handle_mouse_click
         if @args.inputs.mouse.click
             b = @buttons.find_all do |k, v|
-                v.show && @args.inputs.mouse.click.point.inside_rect?(v.primitives.first) &&  (v.location.nil? || v.location == @location)
+                v.show && @args.inputs.mouse.click.point.inside_rect?(v.primitives.first) &&  location_match(v.location)
             end
             b.each do |_, button|
                 if self.respond_to? button.on_click
@@ -84,7 +84,7 @@ class Game
         end
 
         @actors.each do |_, actor|
-            if actor_can_tick(actor)
+            if actor_can_tick?(actor)
                 if actor.on_tick_proc
                     actor.on_tick_proc.call(self, actor)
                 elsif actor.on_tick && respond_to?(actor.on_tick)
@@ -94,7 +94,7 @@ class Game
         end
 
         @buttons.each do |_, button|
-            if button_can_tick(button)
+            if button_can_tick?(button)
                 if button.on_tick_proc
                     button.on_tick_proc.call(self, button)
                 elsif button.on_tick && self.respond_to?(button.on_tick)
@@ -121,7 +121,7 @@ class Game
     def render
         @buttons.each do |_, button|
             if button.show
-                if button.location.nil? || button.location == @location
+                if location_match(button.location)
                     @args.outputs.primitives << button.primitives
                 end
             end
@@ -251,7 +251,7 @@ class Game
             highlight: false,
             primitives: [
                 {x:x, y:y, w:w, h:h, **@default_button_color}.solid!,
-                {x:x, y:y, w:0, h:h, **@default_hightlight_color}.solid!,
+                {x:x, y:y, w:0, h:h, **@default_highlight_color}.solid!,
                 {x:x, y:y, w:w, h:h, **@default_border_color}.border!,
                 {x: x + 10, y:y + 30 ,text:text, **@default_text_color}.label!,
             ]}
@@ -341,8 +341,8 @@ class Game
 
 # Returns true if the button should tick this frame
 # based on location and always_tick.
-    def button_can_tick(button)
-        button.always_tick || button.location.nil? || button.location == @location
+    def button_can_tick?(button)
+        button.always_tick || location_match(button.location)
     end
 
 # == Actors ==
@@ -369,8 +369,8 @@ class Game
 
 # Returns true if the actor should tick this frame
 # based on location and always_tick.
-    def actor_can_tick(actor)
-        actor.always_tick || actor.location.nil? || actor.location == @location
+    def actor_can_tick?(actor)
+        actor.always_tick || location_match(actor.location)
     end
 
 # == Resources ==
@@ -512,6 +512,22 @@ class Game
     end
 
 # == Utilities ==
+#-------------------------------------------------------------
+# location_match
+# Returns true if the location is either nil, an exactl match for the current location,
+# or if it's a list that includes the current location
+#-------------------------------------------------------------
+    def location_match?(location)
+        if location.nil?
+            return true
+        elsif location.is_a?(Symbol)
+            return location == @location
+        elsif location.is_a?(Array)
+            return location.include?(@location)
+        end
+        return false
+    end
+
 # ------------------------------------------------------------
 # wrap_text
 # Splits text into lines constrained by pixel width.
