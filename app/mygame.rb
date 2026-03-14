@@ -300,7 +300,7 @@ class MyGame < Game
     end
 
     def gallery_entered
-        messages = [
+        messages = [entry
             "Dust drifts through the lantern beam.",
             "The air is cool and still.",
             "Ancient stone blocks form a low archway.",
