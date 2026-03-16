@@ -135,17 +135,17 @@ class MyGame < Game
     def setup_entry
 
         create_button :ascend, 600, 300, "Ascend"
-        @buttons[:ascend].location =  :entry
+        @buttons[:ascend].location =  [:entry, :gallery]
         highlight_button :ascend, 100
         reveal_button :ascend
 
         create_button :observe, 600, 350, "Observe"
-        @buttons[:observe].location =  :entry
+        @buttons[:observe].location =  [:entry, :gallery]
         highlight_button :observe
         reveal_button :observe
 
         create_button :excavate, 600, 400, "Excavate"
-        @buttons[:excavate].location =  :entry
+        @buttons[:excavate].location =  [:entry, :gallery]
         highlight_button :excavate
         reveal_button :excavate
 
@@ -154,7 +154,7 @@ class MyGame < Game
     end
 
     def entry_first_entered
-        on_enter_entry("<Detailed Description>")
+        on_enter_entry("A cave entrance leading to a perfectly rectangular space; choked with debris.")
     end
 
     def entry_entered
@@ -168,9 +168,6 @@ class MyGame < Game
     end
 
     def on_enter_entry message
-        @buttons[:ascend].location =  :entry
-        @buttons[:excavate].location =  :entry
-        @buttons[:observer].location =  :entry
         add_message(:notes, message)
         set_resource(:darkness, 5)
         set_highlight(:excavate, 0)
@@ -272,35 +269,15 @@ class MyGame < Game
 # ============================================================
     def setup_gallery
 
-        # We'll cheat and use the same buttons
-        #create_button :ascend, 600, 300, "Ascend"
-        #@buttons[:ascend].location =  :entry
-        #highlight_button :ascend, 100
-        #reveal_button :ascend
-
-        #create_button :observe, 600, 350, "Observe"
-        #@buttons[:observe].location =  :entry
-        #highlight_button :observe
-        #reveal_button :observe
-
-        #create_button :excavate, 600, 400, "Excavate"
-        #@buttons[:excavate].location =  :entry
-        #highlight_button :excavate
-        #reveal_button :excavate
-
-        # We could also steal the darkness tick, or maybe we need a special one
-        #create_actor :darkness, ticks_total=60, location=:entry
-
-        # Looks like I need buttons that can exist in a list of locations.  That seems like a good engine upgrade.
-
+        # We'll cheat and use the same buttons we used in the entry.
     end
 
     def gallery_first_entered
-        on_enter_gallery("<Detailed Description>")
+        on_enter_gallery("A vast columnaded chamber rich in carvings, murals, and objects.")
     end
 
     def gallery_entered
-        messages = [entry
+        messages = [
             "Dust drifts through the lantern beam.",
             "The air is cool and still.",
             "Ancient stone blocks form a low archway.",
@@ -310,10 +287,6 @@ class MyGame < Game
     end
 
     def on_enter_gallery message
-        @buttons[:ascend].location =  :gallery
-        @buttons[:excavate].location =  :gallery
-        @buttons[:observer].location =  :gallery
-
         add_message(:notes, message)
         set_resource(:darkness, 5)
         set_highlight(:excavate, 0)
