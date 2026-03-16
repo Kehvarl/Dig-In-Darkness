@@ -52,7 +52,7 @@ class Game
     def handle_mouse_click
         if @args.inputs.mouse.click
             b = @buttons.find_all do |k, v|
-                v.show && @args.inputs.mouse.click.point.inside_rect?(v.primitives.first) &&  location_match(v.location)
+                v.show && @args.inputs.mouse.click.point.inside_rect?(v.primitives.first) &&  location_match?(v.location)
             end
             b.each do |_, button|
                 if self.respond_to? button.on_click
@@ -121,7 +121,7 @@ class Game
     def render
         @buttons.each do |_, button|
             if button.show
-                if location_match(button.location)
+                if location_match?(button.location)
                     @args.outputs.primitives << button.primitives
                 end
             end
@@ -342,7 +342,7 @@ class Game
 # Returns true if the button should tick this frame
 # based on location and always_tick.
     def button_can_tick?(button)
-        button.always_tick || location_match(button.location)
+        button.always_tick || location_match?(button.location)
     end
 
 # == Actors ==
@@ -370,7 +370,7 @@ class Game
 # Returns true if the actor should tick this frame
 # based on location and always_tick.
     def actor_can_tick?(actor)
-        actor.always_tick || location_match(actor.location)
+        actor.always_tick || location_match?(actor.location)
     end
 
 # == Resources ==
