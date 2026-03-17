@@ -256,10 +256,16 @@ class MyGame < Game
 # - Excavate
 # - Observe
 # - Ascend
+# - (Enter Crypt)
+# - (Enter Ritual Room)
 #
 # Actors:
 # - Darkness (slow Light drain)
 # - Structure (low frequency ambient events)
+#
+# Unlocks:
+# - 3 Crypts.  Each unlocks after finding 4 inscriptions
+# - Ritual Room.  Unlocks after 5 artwork.
 #
 # Tone:
 # Cool air. Settling dust.
@@ -270,6 +276,10 @@ class MyGame < Game
     def setup_gallery
 
         # We'll cheat and use the same buttons we used in the entry.
+
+        # We'll need to hack the Observe and Excavate to handle this room a little better
+        # Since they're multi-room, perhaps each room has a table of possible values for each button.
+        # Either that or I need custom buttons per room.
     end
 
     def gallery_first_entered
