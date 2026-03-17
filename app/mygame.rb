@@ -199,6 +199,11 @@ class MyGame < Game
             return
         end
 
+        # If self.respond_to(entry_observe) self.send(entry_observe).
+        #Something like the above could make this button much more universal.  We just have a per-room handler
+        # Same for Excavate, really.
+        # And Ascend if we didn't want to always to to the surface.
+
         if get_resource(:light) < get_resource(:darkness)
             add_message(:notes, "You cannot see well enough to explore further.")
             set_highlight(:observe, 0)
