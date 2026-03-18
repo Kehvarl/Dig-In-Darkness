@@ -15,7 +15,7 @@ class MyGame < Game
 
 # ============================================================
 # No Location / Global
-# Elements available in all scenes
+# Elements available in multiple scenes
 # ============================================================
     def setup_globals
         create_log :notes, 300, 10, 680, 270
@@ -24,6 +24,64 @@ class MyGame < Game
         set_resource :finds, 0, show=false
         set_resource :relics, 0, show=false
         @finds = []
+
+
+        # Ascend, Observe, and Excavate available in several rooms
+        create_button :ascend, 600, 300, "Ascend"
+        @buttons[:ascend].location =  [:entry, :gallery]
+        highlight_button :ascend, 100
+        reveal_button :ascend
+
+        create_button :observe, 600, 350, "Observe"
+        @buttons[:observe].location =  [:entry, :gallery]
+        highlight_button :observe
+        reveal_button :observe
+
+        create_button :excavate, 600, 400, "Excavate"
+        @buttons[:excavate].location =  [:entry, :gallery]
+        highlight_button :excavate
+        reveal_button :excavate
+    end
+
+    # We will cheat and dispatch to a room-specific button based on the current room
+    def observe_clicked
+        if not button_highlight_full?(:observe)
+            return
+        end
+
+        if get_resource(:light) < get_resource(:darkness)
+            add_message(:notes, "You cannot see well enough to explore further.")
+            set_highlight(:observe, 0)
+            return
+        end
+
+        if self.respond_to?("#{@location}_observe".to_sym)
+            self.send("#{@location}_observe".to_sym)
+        end
+    end
+
+    def excavate_clicked
+        if not button_highlight_full?(:excavate)
+            return
+        end
+
+        if get_resource(:light) < get_resource(:darkness)
+            add_message(:notes, "It is too dark to dig safely.")
+            set_highlight(:excavate, 0)
+            return
+        end
+
+        if self.respond_to?("#{@location}_excavate".to_sym)
+            self.send("#{@location}_excavate".to_sym)
+        end
+    end
+
+    # Ascend always returns to basecamp, no matter how deep you have delved.
+    def ascend_clicked
+        if get_resource(:light) < get_resource(:darkness)
+            add_message(:notes, "You stumble your way back along the path.  It's a good thing you left a rope to follow.")
+        end
+        change_location :surface
     end
 
 # ============================================================
@@ -133,22 +191,6 @@ class MyGame < Game
 # Introduce excavation loop.
 # ============================================================
     def setup_entry
-
-        create_button :ascend, 600, 300, "Ascend"
-        @buttons[:ascend].location =  [:entry, :gallery]
-        highlight_button :ascend, 100
-        reveal_button :ascend
-
-        create_button :observe, 600, 350, "Observe"
-        @buttons[:observe].location =  [:entry, :gallery]
-        highlight_button :observe
-        reveal_button :observe
-
-        create_button :excavate, 600, 400, "Excavate"
-        @buttons[:excavate].location =  [:entry, :gallery]
-        highlight_button :excavate
-        reveal_button :excavate
-
         create_actor :darkness, ticks_total=60, location=:entry
 
     end
@@ -194,22 +236,7 @@ class MyGame < Game
         end
     end
 
-    def observe_clicked
-        if not button_highlight_full?(:observe)
-            return
-        end
-
-        # If self.respond_to(entry_observe) self.send(entry_observe).
-        #Something like the above could make this button much more universal.  We just have a per-room handler
-        # Same for Excavate, really.
-        # And Ascend if we didn't want to always to to the surface.
-
-        if get_resource(:light) < get_resource(:darkness)
-            add_message(:notes, "You cannot see well enough to explore further.")
-            set_highlight(:observe, 0)
-            return
-        end
-
+    def entry_observe
         messages = [
             "The entry hallway is covered in worn and faded carvings.",
             "There is a feature that might be a doorway leading deeper", #Might need to tie this to an unlock
@@ -223,16 +250,7 @@ class MyGame < Game
         adjust_highlight(:excavate, 25)
     end
 
-    def excavate_clicked
-        if not button_highlight_full?(:excavate)
-            return
-        end
-        if get_resource(:light) < get_resource(:darkness)
-            add_message(:notes, "It is too dark to dig safely.")
-            set_highlight(:excavate, 0)
-            return
-        end
-
+    def entry_excavate
         messages = [
             "Your trowel clinks against something; you'll need to study this later",
             "Your questing fingers brush over something loose. It bears further study",
@@ -243,13 +261,6 @@ class MyGame < Game
         generate_resource(:finds)
         set_highlight(:excavate, 0)
         set_highlight(:observe, 100)
-    end
-
-    def ascend_clicked
-        if get_resource(:light) < get_resource(:darkness)
-            add_message(:notes, "You stumble your way back along the path.  It's a good thing you left a rope to follow.")
-        end
-        change_location :surface
     end
 
 # ============================================================
@@ -279,16 +290,16 @@ class MyGame < Game
 # More excavation fun.
 # ============================================================
     def setup_gallery
-
-        # We'll cheat and use the same buttons we used in the entry.
-
-        # We'll need to hack the Observe and Excavate to handle this room a little better
-        # Since they're multi-room, perhaps each room has a table of possible values for each button.
-        # Either that or I need custom buttons per room.
+        create_unlock(:gallery_crypt1)
+        create_unlock(:gallery_crypt2)
+        create_unlock(:gallery_crypt3)
+        create_unlock(:gallery_ritual_room)
     end
 
     def gallery_first_entered
         on_enter_gallery("A vast columnaded chamber rich in carvings, murals, and objects.")
+        set_resource(:inscriptions, 0, show=false)
+        set_resource(:artwork, 0, show=false)
     end
 
     def gallery_entered
@@ -306,5 +317,79 @@ class MyGame < Game
         set_resource(:darkness, 5)
         set_highlight(:excavate, 0)
         set_highlight(:observe, 100)
+    end
+
+    def gallery_observe
+        messages = [
+            "The entry hallway is covered in worn and faded carvings.",
+            "There is a feature that might be a doorway leading deeper", #Might need to tie this to an unlock
+            "Weathered warnings dance beneath the light of your lantern",
+            "The passage echoes with long forgotten whispers, and footsteps."
+        ]
+        if rand < 0.6
+            add_message(:notes, messages.sample)
+        end
+
+        adjust_highlight(:excavate, 25)
+    end
+
+    def gallery_excavate
+        r = rand
+        if r < 0.5
+            messages = [
+                "Your trowel clinks against something; you'll need to study this later",
+                "Your questing fingers brush over something loose. It bears further study",
+                "A small packet, worth opening with care",
+                "Another trinket, why were so many left in the entryway?"
+            ]
+            add_message(:notes, messages.sample)
+            generate_resource(:finds)
+
+        elsif r < 0.75
+            generate_resource(:inscriptions, 1)
+            add_message(:notes, "You uncover a fragment of inscribed stone.")
+
+        else
+            generate_resource(:artwork, 1)
+            add_message(:notes, "A section of mural emerges from the dust.")
+        end
+
+        set_highlight(:excavate, 0)
+        set_highlight(:observe, 100)
+        check_gallery_unlocks
+    end
+
+    def gallery_test_unlocks
+        if get_resource(:inscriptions) >= 4
+            unlock(:gallery_crypt1)
+        end
+
+        if get_resource(:inscriptions) >= 8
+            unlock(:gallery_crypt2)
+        end
+
+        if get_resource(:inscriptions) >= 12
+            unlock(:gallery_crypt3)
+        end
+
+        if get_resource(:artwork) >= 5
+            unlock(:gallery_ritual_room)
+        end
+    end
+
+    def gallery_crypt1_unlocked
+        add_message(:notes, "<First Crypt Unlock>")
+    end
+
+    def gallery_crypt2_unlocked
+        add_message(:notes, "<Second Crypt Unlock>")
+    end
+
+    def gallery_crypt3_unlocked
+        add_message(:notes, "<Third Crypt Unlock>")
+    end
+
+    def gallery_ritual_room_unlocked
+        add_message(:notes, "<Ritual Room Unlock>")
     end
 end
