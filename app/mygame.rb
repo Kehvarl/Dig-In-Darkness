@@ -11,6 +11,7 @@ class MyGame < Game
         setup_entry
 
         @location = :surface
+        @last_observation = nil
     end
 
 # ============================================================
@@ -319,44 +320,91 @@ class MyGame < Game
         set_highlight(:observe, 100)
     end
 
-    def gallery_observe
-        messages = [
-            "The entry hallway is covered in worn and faded carvings.",
-            "There is a feature that might be a doorway leading deeper", #Might need to tie this to an unlock
-            "Weathered warnings dance beneath the light of your lantern",
-            "The passage echoes with long forgotten whispers, and footsteps."
+    def gallery_messages(phase=1, type=nil)
+        m = [
+            {phase: 1, type: :artwork, message: "Beneath the dust, shadows show a hint of carvings on the walls"},
+            {phase: 1, type: :artwork, message: "A flash of color on a column gives a tantalizing clue to an ancient painting."},
+            {phase: 1, type: :inscription, message: "A line of carved symbols hints at deeper meanings"},
+            {phase: 1, type: :inscription, message: "Tiny pictograms outline the carving of a seated figure."},
+            {phase: 1, type: :inscription, message: ""},
+            {phase: 1, type: :find, message: "At the base of a column, dust cakes a strange shape."},
+            {phase: 1, type: :find, message: "A niche could contain hidden treasures."},
+            {phase: 1, type: :find, message: "As your lantern beam shines by, something glints in the shadows."},
+            {phase: 1, type: :find, message: "Indentations hint at missing inlays."}
         ]
-        if rand < 0.6
-            add_message(:notes, messages.sample)
+
+        out = m.select do |m|
+            m[:phase] <= phase && (type == nil || m[:type] == type)
         end
 
+        out
+    end
+
+    def gallery_phase
+        r = get_resource(:inscriptions)
+        if r < 4
+            return 1  # No crypts
+        elsif r < 8
+            return 2  # First Crypt revealed
+        elsif r < 12
+            return 3  # Second crypt revealed
+        elsif get_resource(:artwork) < 5
+            return 4  # Third crypt revealed
+        else
+            return 5  # Ritual Room revealed
+        end
+
+    end
+
+    def gallery_observe
+        ph = gallery_phase
+        r = rand
+        if r < 0.5
+            @last_observation = gallery_messages(ph, :find).sample()
+        elsif r < 0.7
+            @last_observation = gallery_messages(ph,:inscription).sample()
+        elsif r < 0.8
+            @last_observation = gallery_messages(ph, :artwork).sample()
+        else
+            @last_observation = nil
+        end
+
+        if @last_observation
+            add_message(:notes, @last_observation.message)
+        else
+            add_message(:notes, "Nothing stands out… but that in itself feels strange.")
+
+        end
         adjust_highlight(:excavate, 25)
     end
 
     def gallery_excavate
-        r = rand
-        if r < 0.5
-            messages = [
-                "Your trowel clinks against something; you'll need to study this later",
-                "Your questing fingers brush over something loose. It bears further study",
-                "A small packet, worth opening with care",
-                "Another trinket, why were so many left in the entryway?"
-            ]
+        messages = [
+            "Your trowel clinks against something; you'll need to study this later",
+            "Your questing fingers brush over something loose. It bears further study",
+            "A small packet, worth opening with care",
+            "Another trinket, why were so many left in the entryway?"
+        ]
+
+        if not @last_observation
             add_message(:notes, messages.sample)
             generate_resource(:finds)
-
-        elsif r < 0.75
+        elsif @last_observation.type == :find
+            add_message(:notes, messages.sample)
+            generate_resource(:finds)
+        elsif @last_observation.type == :inscription
             generate_resource(:inscriptions, 1)
             add_message(:notes, "You uncover a fragment of inscribed stone.")
-
-        else
+        elsif @last_observation.type == :artwork
             generate_resource(:artwork, 1)
             add_message(:notes, "A section of mural emerges from the dust.")
+        else
+            puts "Error, invalid observation type"
         end
 
         set_highlight(:excavate, 0)
         set_highlight(:observe, 100)
-        check_gallery_unlocks
+        gallery_test_unlocks
     end
 
     def gallery_test_unlocks

@@ -491,7 +491,7 @@ class Game
                 messages: [],
                 max_messages: 50,
                 padding: 8,
-                line_height: 16,
+                line_height: 24,
                 show: true
         }
     end
