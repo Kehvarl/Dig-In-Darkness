@@ -10,6 +10,7 @@ class MyGame < Game
         setup_surface
         setup_entry
 
+        @descend_target = :entry
         @location = :surface
         @last_observation = nil
     end
@@ -167,7 +168,7 @@ class MyGame < Game
     def descend_clicked
         if @buttons[:descend].highlight_percent >= 100
             @buttons[:descend].highlight_percent = 0
-            change_location :entry
+            change_location @descend_target
         end
     end
 
@@ -193,7 +194,8 @@ class MyGame < Game
 # ============================================================
     def setup_entry
         create_actor :darkness, ticks_total=60, location=:entry
-
+        set_resource(:entry_progress, 0, show=false)
+        create_unlock :gallery
     end
 
     def entry_first_entered
@@ -237,15 +239,45 @@ class MyGame < Game
         end
     end
 
-    def entry_observe
-        messages = [
-            "The entry hallway is covered in worn and faded carvings.",
-            "There is a feature that might be a doorway leading deeper", #Might need to tie this to an unlock
-            "Weathered warnings dance beneath the light of your lantern",
-            "The passage echoes with long forgotten whispers, and footsteps."
+    def entry_messages(phase=1)
+        m = [
+            {phase: 1, message: "The entry hallway is covered in worn and faded carvings."},
+            {phase: 1, message: "The passage echoes with long forgotten whispers, and footsteps."},
+            {phase: 1, message: "Weathered warnings dance beneath the light of your lantern"},
+            {phase: 2, message: "The wall here is too smooth to be natural."},
+            {phase: 2, message: "Beneath the rubble, a flat surface emerges."},
+            {phase: 3, message: "A seam runs through the stonework."},
+            {phase: 3, message: "This is not a wall, it's a blockage."},
+            {phase: 3, message: "There is a feature that might be a doorway leading deeper."},
+            {phase: 4, message: "A buried doorway stands before you."},
+            {phase: 4, message: "Beyond the obstruction the passages continues into darkness."},
+
         ]
+
+        out = m.select do |m|
+            m[:phase] <= phase
+        end
+
+        out
+    end
+
+    def entry_phase
+        r = get_resource(:entry_progress)
+        if r < 2
+            return 1
+        elsif r < 4
+            return 2
+        elsif r <= 5
+            return 3
+        else
+            return 4
+        end
+    end
+
+    def entry_observe
+        messages = entry_messages(entry_phase)
         if rand < 0.6
-            add_message(:notes, messages.sample)
+            add_message(:notes, messages.sample.message)
         end
 
         adjust_highlight(:excavate, 25)
@@ -258,11 +290,31 @@ class MyGame < Game
             "A small packet, worth opening with care",
             "Another trinket, why were so many left in the entryway?"
         ]
+
+        if rand < 0.4
+            generate_resource(:entry_progress, 1)
+        end
+
         add_message(:notes, messages.sample)
         generate_resource(:finds)
         set_highlight(:excavate, 0)
         set_highlight(:observe, 100)
+
+        if not unlocked?(:gallery) and get_resource(:entry_progress) >= 6
+            unlock(:gallery)
+        end
     end
+
+    def gallery_unlocked
+        @descend_target = :gallery
+
+        add_message(:notes, "Your trowel breaks through. Stone collapses inward.")
+        add_message(:notes, "Dust billows out from a space beyond.")
+        add_message(:notes, "Your lantern light spills into a vast chamber.")
+
+        change_location(:gallery)
+    end
+
 
 # ============================================================
 # :gallery
