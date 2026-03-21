@@ -102,7 +102,7 @@ class MyGame < Game
         highlight_button :descend, 100
         reveal_button :descend
 
-        create_button :supplies, 600, 350, "Prepare Supplies"
+        create_button :supplies, 600, 350, "Recharge Lantern (1)"
         @buttons[:supplies].location =  :surface
         highlight_button :supplies
         reveal_button :supplies
@@ -113,6 +113,7 @@ class MyGame < Game
         reveal_button :findings
 
         create_actor :restock, ticks_total=60, location=:surface
+        set_resource(:lantern, 5)
     end
 
     def surface_entered
@@ -133,7 +134,19 @@ class MyGame < Game
         end
     end
 
+    def supplies_tick
+        if get_resource(:light) < 100 && get_resource(:lantern) > 0
+            set_highlight(:supplies, 100)
+        else
+            set_highlight(:supplies, 0)
+        end
+    end
+
     def supplies_clicked
+        if get_resource(:light) < 100 && get_resource(:lantern) > 0
+            set_resource(:light, 100)
+            use_resource(:lantern)
+        end
     end
 
     def findings_clicked
