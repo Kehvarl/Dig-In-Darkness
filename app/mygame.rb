@@ -249,6 +249,8 @@ class MyGame < Game
             {phase: 3, message: "A seam runs through the stonework."},
             {phase: 3, message: "This is not a wall, it's a blockage."},
             {phase: 3, message: "There is a feature that might be a doorway leading deeper."},
+            {phase: 3, message: "A repeated symbol emerges beneath the dust."},
+            {phase: 3, message: "The carvings here are sharper, less worn."},
             {phase: 4, message: "A buried doorway stands before you."},
             {phase: 4, message: "Beyond the obstruction the passages continues into darkness."},
 
@@ -291,7 +293,7 @@ class MyGame < Game
             "Another trinket, why were so many left in the entryway?"
         ]
 
-        if rand < 0.4
+        if rand < (0.2*entry_phase)
             generate_resource(:entry_progress, 1)
         end
 
@@ -308,9 +310,9 @@ class MyGame < Game
     def gallery_unlocked
         @descend_target = :gallery
 
-        add_message(:notes, "Your trowel breaks through. Stone collapses inward.")
-        add_message(:notes, "Dust billows out from a space beyond.")
-        add_message(:notes, "Your lantern light spills into a vast chamber.")
+        add_message(:notes, "Your trowel breaks through. Stone collapses inward.", { r: 230, g: 200, b: 0 })
+        add_message(:notes, "Dust billows out from a space beyond.", { r: 230, g: 200, b: 0 })
+        add_message(:notes, "Your lantern light spills into a vast chamber.", { r: 230, g: 200, b: 0 })
 
         change_location(:gallery)
     end
@@ -382,7 +384,38 @@ class MyGame < Game
             {phase: 1, type: :find, message: "At the base of a column, dust cakes a strange shape."},
             {phase: 1, type: :find, message: "A niche could contain hidden treasures."},
             {phase: 1, type: :find, message: "As your lantern beam shines by, something glints in the shadows."},
-            {phase: 1, type: :find, message: "Indentations hint at missing inlays."}
+            {phase: 1, type: :find, message: "Indentations hint at missing inlays."},
+            {phase: 2, type: :inscription, message: "The same symbols repeat here, more clearly carved."},
+            {phase: 2, type: :inscription, message: "You recognize a sequence of markings you've seen before."},
+            {phase: 2, type: :inscription, message: "The carvings follow a pattern, though its meaning escapes you."},
+            {phase: 2, type: :artwork, message: "A mural shows a figure beside a familiar shape."},
+            {phase: 2, type: :artwork, message: "The same form appears again, rendered in faded pigment."},
+            {phase: 2, type: :find, message: "A worked object bears markings similar to the walls."},
+            {phase: 2, type: :find, message: "This piece fits the style of others you've uncovered."},
+            {phase: 3, type: :inscription, message: "The symbols seem arranged with purpose, not decoration."},
+            {phase: 3, type: :inscription, message: "Certain markings always appear together."},
+            {phase: 3, type: :inscription, message: "You begin to suspect these carvings describe events."},
+            {phase: 3, type: :artwork, message: "A figure reaches toward an object, the gesture repeated elsewhere."},
+            {phase: 3, type: :artwork, message: "The mural suggests movement—an action frozen in time."},
+            {phase: 3, type: :artwork, message: "One shape dominates the scene, others arranged around it."},
+            {phase: 3, type: :find, message: "The object seems ceremonial, not practical."},
+            {phase: 3, type: :find, message: "Wear patterns suggest this was handled with care—or ritual."},
+            {phase: 4, type: :inscription, message: "The same symbols appear here, but in a different order."},
+            {phase: 4, type: :inscription, message: "A familiar sequence is altered, subtly but unmistakably."},
+            {phase: 4, type: :inscription, message: "Some markings seem deliberately defaced."},
+            {phase: 4, type: :artwork, message: "A mural mirrors another you've seen—but something is wrong."},
+            {phase: 4, type: :artwork, message: "The central figure is absent here, leaving only the surrounding forms."},
+            {phase: 4, type: :artwork, message: "An earlier scene repeats, but the roles appear reversed."},
+            {phase: 4, type: :find, message: "This object contradicts others you've uncovered."},
+            {phase: 4, type: :find, message: "Its markings clash with the patterns you've begun to recognize."},
+            {phase: 5, type: :inscription, message: "The symbols blur together, their meaning uncertain."},
+            {phase: 5, type: :inscription, message: "Familiar markings appear in impossible combinations."},
+            {phase: 5, type: :inscription, message: "You can no longer tell if the patterns were ever consistent."},
+            {phase: 5, type: :artwork, message: "The scene defies interpretation—forms layered without order."},
+            {phase: 5, type: :artwork, message: "Figures and shapes merge, their roles indistinguishable."},
+            {phase: 5, type: :artwork, message: "The imagery feels deliberate, but no longer coherent."},
+            {phase: 5, type: :find, message: "The object resists categorization."},
+            {phase: 5, type: :find, message: "It resembles earlier finds, but not quite."},
         ]
 
         out = m.select do |m|
@@ -478,15 +511,15 @@ class MyGame < Game
     end
 
     def gallery_crypt1_unlocked
-        add_message(:notes, "<First Crypt Unlock>")
+        add_message(:notes, "You gently tap a likely stone and the wall rings hollowly.  Moments later you've opened a secret doorway into a new wing lined with columns.", { r: 230, g: 230, b: 128 })
     end
 
     def gallery_crypt2_unlocked
-        add_message(:notes, "<Second Crypt Unlock>")
+        add_message(:notes, "The inscriptions are becoming ever more memorable as you explore, and a repeated motif draws your attention.  Before long you've pushed open another hidden doorway, behind which your lantern's beam is cast over sarcophagi hewn from the living rock.", { r: 230, g: 230, b: 128 })
     end
 
     def gallery_crypt3_unlocked
-        add_message(:notes, "<Third Crypt Unlock>")
+        add_message(:notes, "The inscriptions that lead to the new wings are repeated always in groups of three.  That insight and the discovery of a tell-tale symbol under layers of dust leads you to another concealed doorway, and the third wing full of columns and crypts.", { r: 230, g: 230, b: 128 })
     end
 
     def gallery_ritual_room_unlocked
