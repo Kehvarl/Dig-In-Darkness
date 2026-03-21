@@ -112,7 +112,7 @@ class MyGame < Game
         highlight_button :findings
         reveal_button :findings
 
-        create_actor :restock, ticks_total=30, location=:surface
+        create_actor :restock, ticks_total=60, location=:surface
         set_resource(:lantern, 5)
     end
 
