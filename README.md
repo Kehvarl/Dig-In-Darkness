@@ -14,4 +14,4 @@ Why are there so many figurines and trinkets to be found?
 A Long columnaded room.
 Broken statues and fragmentary inscriptions
 
-#?
+# Room of Heaven
