@@ -15,3 +15,5 @@ A Long columnaded room.
 Broken statues and fragmentary inscriptions
 
 # Room of Heaven
+
+# Gateway of Eternity
